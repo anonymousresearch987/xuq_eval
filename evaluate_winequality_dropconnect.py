@@ -70,7 +70,7 @@ if __name__ == "__main__":
     uq_strategy = "dropconnect"  # "dropout" or "dropconnect"
     n_folds = 5
 
-    nr_testsamples = 2
+    nr_testsamples = 100
 
     if uq_strategy not in ["dropout", "dropconnect"]:
         raise AssertionError(f"UQ strategy {uq_strategy} not implemented.")
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
         training_props = ModelTrainingProps(
             initialisation_strategy=None,
-            epochs=10,
+            epochs=50,
             learn_rate=0.001,
             optimizer="Adam",
             loss_function="MSE",
