@@ -16,6 +16,7 @@ from src.explainer.explainer import (
 )
 from src.utils.utils_data_formatter import save_dict_to_text
 from src.evaluation.evaluation_utils import evaluate_uncertainty_attributions
+from torch.utils.data import DataLoader, TensorDataset
 
 from src.models.models_dropout import UQMCDropoutCNNClassifier
 from src.models.models_dropconnect import UQMCDropconnectCNNClassifier
@@ -74,18 +75,20 @@ if __name__ == "__main__":
         raise AssertionError(f"UQ strategy {uq_strategy} not implemented.")
 
     folds_dict = mnist.MNISTDataset().serve_dataset_as_folds(
-        k_folds=n_folds, val_set_required=False, random_state=seed
+        k_folds=n_folds, val_set_required=True, random_state=seed
     )
     fold_uncertainty_attributions = {}
     fold_uncertainty_metrics = {}
 
     for key, _ in folds_dict.items():
         split_data = folds_dict[key]
-        X_train, X_test, y_train, y_test = (
+        X_train, X_test, X_val, y_train, y_test, y_val = (
             split_data["X_train"],
             split_data["X_test"],
+            split_data["X_val"],
             split_data["y_train"],
             split_data["y_test"],
+            split_data["y_val"],
         )
 
         #########################################################
@@ -143,7 +146,18 @@ if __name__ == "__main__":
                 training_props=training_props,
             )
 
-        train, val, test = mnist.MNISTDataset().serve_dataset_as_dataloader()
+        X_train = X_train.data.float().unsqueeze(1)
+        X_test = X_test.data.float().unsqueeze(1)
+        X_val = X_val.data.float().unsqueeze(1)
+
+
+        train_dataset = TensorDataset(X_train, y_train)
+        val_dataset = TensorDataset(X_val, y_val)
+        test_dataset = TensorDataset(X_test, y_test)
+        train = DataLoader(train_dataset, batch_size=32, shuffle=True)
+        val = DataLoader(val_dataset, batch_size=32, shuffle=False)
+        test = DataLoader(test_dataset, batch_size=32, shuffle=False)   
+        train, val, test = mnist.MNISTDataset().serve_dataset_as_dataloader()     
         uq_model.fit(
             train,
             val,
