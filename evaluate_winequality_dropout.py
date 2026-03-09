@@ -15,6 +15,8 @@ from src.explainer.explainer import (
     LRPExplainer,
     LimeExplainer,
 )
+from torch.utils.data import DataLoader, TensorDataset
+
 from src.utils.utils_data_formatter import save_dict_to_text
 from src.evaluation.evaluation_utils import evaluate_uncertainty_attributions
 
@@ -67,7 +69,7 @@ if __name__ == "__main__":
     uq_strategy = "dropout"  # "dropout" or "dropconnect"
     n_folds = 5
 
-    nr_testsamples = 100
+    nr_testsamples = 5
 
     if uq_strategy not in ["dropout", "dropconnect"]:
         raise AssertionError(f"UQ strategy {uq_strategy} not implemented.")
@@ -113,7 +115,7 @@ if __name__ == "__main__":
 
         training_props = ModelTrainingProps(
             initialisation_strategy=None,
-            epochs=40,
+            epochs=5,
             learn_rate=0.001,
             optimizer="Adam",
             loss_function="MSE",
@@ -144,7 +146,14 @@ if __name__ == "__main__":
             )
             print("Using the DropConnect Model")
 
-        train, val, test = winequality.WineQualityDataset().serve_dataset_as_dataloader()
+
+        train_dataset = TensorDataset(X_train, y_train)
+        val_dataset = TensorDataset(X_val, y_val)
+        test_dataset = TensorDataset(X_test, y_test)
+        train = DataLoader(train_dataset, batch_size=32, shuffle=True)
+        val = DataLoader(val_dataset, batch_size=32, shuffle=False)
+        test = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
 
         uq_model.fit(
             train,
