@@ -113,6 +113,9 @@ class MNISTDataset(Dataset):
             y_train_fold, y_test_fold = numpy_to_torch(
                 (full_target_set[train_index], full_target_set[test_index])
             )
+            # ensure labels are integer class indices (LongTensor) for loss functions
+            y_train_fold = y_train_fold.long()
+            y_test_fold = y_test_fold.long()
 
             n_train = int(X_train_fold.shape[0] * (1 - val_split))
             X_train_fold, X_val_fold = X_train_fold[:n_train], X_train_fold[n_train:]
