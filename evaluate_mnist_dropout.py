@@ -148,12 +148,18 @@ if __name__ == "__main__":
                 training_props=training_props,
             )
 
+        X_train = X_train.data.float().unsqueeze(1)
+        X_test = X_test.data.float().unsqueeze(1)
+        X_val = X_val.data.float().unsqueeze(1)
+
+
         train_dataset = TensorDataset(X_train, y_train)
         val_dataset = TensorDataset(X_val, y_val)
         test_dataset = TensorDataset(X_test, y_test)
         train = DataLoader(train_dataset, batch_size=32, shuffle=True)
         val = DataLoader(val_dataset, batch_size=32, shuffle=False)
-        test = DataLoader(test_dataset, batch_size=32, shuffle=False)        
+        test = DataLoader(test_dataset, batch_size=32, shuffle=False)   
+        train, val, test = mnist.MNISTDataset().serve_dataset_as_dataloader()     
         uq_model.fit(
             train,
             val,
