@@ -145,10 +145,15 @@ if __name__ == "__main__":
                 model_props=model_props,
                 training_props=training_props,
             )
+        def _ensure_channel(tensor):
+            t = tensor.data.float() if hasattr(tensor, "data") else tensor.float()
+            if t.dim() == 3:
+                t = t.unsqueeze(1)
+            return t
 
-        X_train = X_train.data.float().unsqueeze(1)
-        X_test = X_test.data.float().unsqueeze(1)
-        X_val = X_val.data.float().unsqueeze(1)
+        X_train = _ensure_channel(X_train)
+        X_test = _ensure_channel(X_test)
+        X_val = _ensure_channel(X_val)
 
 
         train_dataset = TensorDataset(X_train, y_train)
@@ -157,7 +162,6 @@ if __name__ == "__main__":
         train = DataLoader(train_dataset, batch_size=32, shuffle=True)
         val = DataLoader(val_dataset, batch_size=32, shuffle=False)
         test = DataLoader(test_dataset, batch_size=32, shuffle=False)   
-        train, val, test = mnist.MNISTDataset().serve_dataset_as_dataloader()     
         uq_model.fit(
             train,
             val,
