@@ -19,14 +19,17 @@ class RelativeInputStability(Metric):
     name = "RelativeInputStability"
     eps = 1e-6
     noise_std: float = 0.05
+    num_perturbations: int
 
-    def __init__(self, noise_std: float = 0.05) -> None:
+    def __init__(self, noise_std: float = 0.05, num_perturbations: int = 50) -> None:
         """init RelativeInputStability Metric
 
         Args:
             noise_std (float, optional): standard deviation of noise. Defaults to 0.05.
+            num_perturbations (int, optional): number of perturbed samples to generate. Defaults to 50.
         """
         self.noise_std = noise_std
+        self.num_perturbations = num_perturbations
 
     def get_name(self) -> str:
         """get name
@@ -40,14 +43,12 @@ class RelativeInputStability(Metric):
         self,
         input: torch.Tensor,
         uq_model: NeuralNetworkBase,
-        num_perturbations: int = 50,
     ) -> torch.Tensor:
         """Perturbs the input by adding Gaussian noise N(0, noise_std^2) and returns num_perturbations samples.
 
         Args:
             input (torch.Tensor): original input (expected shape: (11,) for Winequality or (1,28, 28) for MNIST)
             uq_model (NeuralNetworkBase): ensemble-based uncertainty quantification model
-            num_perturbations (int, optional): number of perturbed samples to generate. Defaults to 50.
 
         Returns:
             torch.Tensor: perturbed inputs with shape (num_perturbations, *input.shape)
@@ -56,12 +57,12 @@ class RelativeInputStability(Metric):
         noise = torch.normal(
             0,
             self.noise_std,
-            size=(num_perturbations, *inp.shape),
+            size=(self.num_perturbations, *inp.shape),
             device=inp.device,
             dtype=inp.dtype,
         )
 
-        perturbed_inputs = inp.unsqueeze(0).expand(num_perturbations, *inp.shape) + noise
+        perturbed_inputs = inp.unsqueeze(0).expand(self.num_perturbations, *inp.shape) + noise
 
         perturbed_inputs = self.check_uncertainty_label(
             input=input, perturbed_inputs=perturbed_inputs, uq_model=uq_model
@@ -169,7 +170,7 @@ class RelativeInputStability(Metric):
             sample = X_test[i]
             original_attr = uncertainty_attributions[i]
             perturbed_inputs = self.perturb_input(
-                input=sample, uq_model=uq_model, num_perturbations=50
+                input=sample, uq_model=uq_model #TODO ändern
             )
             if perturbed_inputs.shape[0] == 0:
                 continue
