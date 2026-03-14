@@ -1,6 +1,6 @@
 # No Single Metric Tells the Whole Story: A Multi-Dimensional Evaluation Framework for Uncertainty Attributions
 
-This repository contains code in relation to the paper ***No Single Metric Tells the Whole Story: A Multi-Dimensional Evaluation Framework for Uncertainty Attributions*** currently under review at XAI26.
+This repository contains code in relation to the paper ***No Single Metric Tells the Whole Story: A Multi-Dimensional Evaluation Framework for Uncertainty Attributions*** by Emily Schiller, Teodor Chiaburu, Marco Zullich, and Luca Longo accepted at XAI26.
 
 ## Setup
 
